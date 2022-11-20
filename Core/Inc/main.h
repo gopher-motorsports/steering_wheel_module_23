@@ -59,8 +59,34 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define BUTTON_Pin GPIO_PIN_13
 #define BUTTON_GPIO_Port GPIOC
-#define GRN_LED_Pin GPIO_PIN_5
-#define GRN_LED_GPIO_Port GPIOA
+#define Rot_SW0_In_Pin GPIO_PIN_0
+#define Rot_SW0_In_GPIO_Port GPIOC
+#define Rot_SW1_In_Pin GPIO_PIN_1
+#define Rot_SW1_In_GPIO_Port GPIOC
+#define Rot_SW2_In_Pin GPIO_PIN_2
+#define Rot_SW2_In_GPIO_Port GPIOC
+#define Rot_SW3_IN_Pin GPIO_PIN_3
+#define Rot_SW3_IN_GPIO_Port GPIOC
+#define Up_Shift_In_Pin GPIO_PIN_0
+#define Up_Shift_In_GPIO_Port GPIOA
+#define Down_Shift_in_Pin GPIO_PIN_1
+#define Down_Shift_in_GPIO_Port GPIOA
+#define Slow_Clutch_In_Pin GPIO_PIN_2
+#define Slow_Clutch_In_GPIO_Port GPIOA
+#define Fast_Clutch_In_Pin GPIO_PIN_3
+#define Fast_Clutch_In_GPIO_Port GPIOA
+#define Face_BTN0_In_Pin GPIO_PIN_4
+#define Face_BTN0_In_GPIO_Port GPIOA
+#define Face_BTN1_In_Pin GPIO_PIN_5
+#define Face_BTN1_In_GPIO_Port GPIOA
+#define Face_BTN2_In_Pin GPIO_PIN_6
+#define Face_BTN2_In_GPIO_Port GPIOA
+#define Face_BTN3_In_Pin GPIO_PIN_7
+#define Face_BTN3_In_GPIO_Port GPIOA
+#define CANRX_Pin GPIO_PIN_8
+#define CANRX_GPIO_Port GPIOB
+#define CANTX_Pin GPIO_PIN_9
+#define CANTX_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

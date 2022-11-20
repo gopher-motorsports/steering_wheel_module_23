@@ -41,8 +41,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-CAN_HandleTypeDef hcan1;
-
 /* Definitions for main_task */
 osThreadId_t main_taskHandle;
 const osThreadAttr_t main_task_attributes = {
@@ -64,7 +62,6 @@ const osThreadAttr_t buffer_handling_attributes = {
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_CAN1_Init(void);
 void task_MainTask(void *argument);
 void task_BufferHandling(void *argument);
 
@@ -105,7 +102,6 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
 
   init(&hcan1);
@@ -157,6 +153,22 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	 HAL_GPIO_ReadPin(Up_Shift_In);
+	 HAL_GPIO_ReadPin(Down_Shift_In);
+
+	 HAL_GPIO_ReadPin(Face_BTN0_In);
+	 HAL_GPIO_ReadPin(Face_BTN1_In);
+	 HAL_GPIO_ReadPin(Face_BTN2_In);
+	 HAL_GPIO_ReadPin(Face_BTN3_In);
+
+	 HAL_GPIO_ReadPin(CANTX);
+	 HAL_GPIO_ReadPin(CANRX);
+
+	 HAL_GPIO_ReadPin(Rot_SW0_In);
+	 HAL_GPIO_ReadPin(Rot_SW1_In);
+	 HAL_GPIO_ReadPin(Rot_SW2_In);
+	 HAL_GPIO_ReadPin(Rot_SW3_In);
+
   }
   /* USER CODE END 3 */
 }
@@ -209,43 +221,6 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief CAN1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_CAN1_Init(void)
-{
-
-  /* USER CODE BEGIN CAN1_Init 0 */
-
-  /* USER CODE END CAN1_Init 0 */
-
-  /* USER CODE BEGIN CAN1_Init 1 */
-
-  /* USER CODE END CAN1_Init 1 */
-  hcan1.Instance = CAN1;
-  hcan1.Init.Prescaler = 5;
-  hcan1.Init.Mode = CAN_MODE_LOOPBACK;
-  hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
-  hcan1.Init.TimeSeg1 = CAN_BS1_6TQ;
-  hcan1.Init.TimeSeg2 = CAN_BS2_1TQ;
-  hcan1.Init.TimeTriggeredMode = DISABLE;
-  hcan1.Init.AutoBusOff = ENABLE;
-  hcan1.Init.AutoWakeUp = ENABLE;
-  hcan1.Init.AutoRetransmission = DISABLE;
-  hcan1.Init.ReceiveFifoLocked = DISABLE;
-  hcan1.Init.TransmitFifoPriority = DISABLE;
-  if (HAL_CAN_Init(&hcan1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN CAN1_Init 2 */
-
-  /* USER CODE END CAN1_Init 2 */
-
-}
-
-/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -259,21 +234,27 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GRN_LED_GPIO_Port, GRN_LED_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : BUTTON_Pin */
-  GPIO_InitStruct.Pin = BUTTON_Pin;
+  /*Configure GPIO pins : BUTTON_Pin Rot_SW0_In_Pin Rot_SW1_In_Pin Rot_SW2_In_Pin
+                           Rot_SW3_IN_Pin */
+  GPIO_InitStruct.Pin = BUTTON_Pin|Rot_SW0_In_Pin|Rot_SW1_In_Pin|Rot_SW2_In_Pin
+                          |Rot_SW3_IN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(BUTTON_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : GRN_LED_Pin */
-  GPIO_InitStruct.Pin = GRN_LED_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  /*Configure GPIO pins : Up_Shift_In_Pin Down_Shift_in_Pin Slow_Clutch_In_Pin Fast_Clutch_In_Pin
+                           Face_BTN0_In_Pin Face_BTN1_In_Pin Face_BTN2_In_Pin Face_BTN3_In_Pin */
+  GPIO_InitStruct.Pin = Up_Shift_In_Pin|Down_Shift_in_Pin|Slow_Clutch_In_Pin|Fast_Clutch_In_Pin
+                          |Face_BTN0_In_Pin|Face_BTN1_In_Pin|Face_BTN2_In_Pin|Face_BTN3_In_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GRN_LED_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : CANRX_Pin CANTX_Pin */
+  GPIO_InitStruct.Pin = CANRX_Pin|CANTX_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
