@@ -57,36 +57,36 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define BUTTON_Pin GPIO_PIN_13
-#define BUTTON_GPIO_Port GPIOC
-#define Rot_SW0_In_Pin GPIO_PIN_0
-#define Rot_SW0_In_GPIO_Port GPIOC
-#define Rot_SW1_In_Pin GPIO_PIN_1
-#define Rot_SW1_In_GPIO_Port GPIOC
-#define Rot_SW2_In_Pin GPIO_PIN_2
-#define Rot_SW2_In_GPIO_Port GPIOC
-#define Rot_SW3_IN_Pin GPIO_PIN_3
-#define Rot_SW3_IN_GPIO_Port GPIOC
-#define Up_Shift_In_Pin GPIO_PIN_0
-#define Up_Shift_In_GPIO_Port GPIOA
-#define Down_Shift_in_Pin GPIO_PIN_1
-#define Down_Shift_in_GPIO_Port GPIOA
-#define Slow_Clutch_In_Pin GPIO_PIN_2
-#define Slow_Clutch_In_GPIO_Port GPIOA
-#define Fast_Clutch_In_Pin GPIO_PIN_3
-#define Fast_Clutch_In_GPIO_Port GPIOA
-#define Face_BTN0_In_Pin GPIO_PIN_4
-#define Face_BTN0_In_GPIO_Port GPIOA
-#define Face_BTN1_In_Pin GPIO_PIN_5
-#define Face_BTN1_In_GPIO_Port GPIOA
-#define Face_BTN2_In_Pin GPIO_PIN_6
-#define Face_BTN2_In_GPIO_Port GPIOA
-#define Face_BTN3_In_Pin GPIO_PIN_7
-#define Face_BTN3_In_GPIO_Port GPIOA
-#define CANRX_Pin GPIO_PIN_8
-#define CANRX_GPIO_Port GPIOB
-#define CANTX_Pin GPIO_PIN_9
-#define CANTX_GPIO_Port GPIOB
+#define GSENSE_LED_Pin GPIO_PIN_7
+#define GSENSE_LED_GPIO_Port GPIOA
+#define HBEAT_LED_Pin GPIO_PIN_4
+#define HBEAT_LED_GPIO_Port GPIOC
+#define Rot_SW3_In_Pin GPIO_PIN_12
+#define Rot_SW3_In_GPIO_Port GPIOB
+#define Rot_SW2_In_Pin GPIO_PIN_13
+#define Rot_SW2_In_GPIO_Port GPIOB
+#define Rot_SW1_In_Pin GPIO_PIN_14
+#define Rot_SW1_In_GPIO_Port GPIOB
+#define Rot_SW0_In_Pin GPIO_PIN_15
+#define Rot_SW0_In_GPIO_Port GPIOB
+#define Face_BTN3_In_Pin GPIO_PIN_6
+#define Face_BTN3_In_GPIO_Port GPIOC
+#define Face_BTN2_In_Pin GPIO_PIN_7
+#define Face_BTN2_In_GPIO_Port GPIOC
+#define Face_BTN1_In_Pin GPIO_PIN_8
+#define Face_BTN1_In_GPIO_Port GPIOC
+#define Face_BTN0_In_Pin GPIO_PIN_9
+#define Face_BTN0_In_GPIO_Port GPIOC
+#define Fast_Clutch_In_Pin GPIO_PIN_10
+#define Fast_Clutch_In_GPIO_Port GPIOC
+#define Slow_Clutch_In_Pin GPIO_PIN_11
+#define Slow_Clutch_In_GPIO_Port GPIOC
+#define Down_Shift_In_Pin GPIO_PIN_4
+#define Down_Shift_In_GPIO_Port GPIOB
+#define Up_Shift_In_Pin GPIO_PIN_5
+#define Up_Shift_In_GPIO_Port GPIOB
+#define BUTTON_Pin GPIO_PIN_7
+#define BUTTON_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

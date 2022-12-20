@@ -3,6 +3,7 @@
 
 #include "GopherCAN_devboard_example.h"
 #include "main.h"
+#include "gopher_sense.h"
 
 // the HAL_CAN struct. This example only works for a single CAN bus
 CAN_HandleTypeDef* example_hcan;
@@ -61,17 +62,66 @@ void can_buffer_handling_loop()
 	service_can_tx_hardware(example_hcan);
 }
 
+	U8 button_state;
+	U8 up_shift_in;
+	U8 down_shift_in;
+
+	U8 slow_clutch_in;
+	U8 fast_clutch_in;
+
+	U8 face_btn0_in;
+	U8 face_btn1_in;
+	U8 face_btn2_in;
+	U8 face_btn3_in;
+
+
+	U8 rot_sw0_in;
+	U8 rot_sw1_in;
+	U8 rot_sw2_in;
+	U8 rot_sw3_in;
+
+	//will store the bitwise version of all rotary inputs, Ex: rot0 = 1, rot1 = 1, rot2 = 1, and rot3 =1  --> rot_rawResult = 00001111
+	U8 rot_result;
+
+
 
 // main_loop
 //  another loop. This includes logic for sending a CAN command. Designed to be
 //  called every 10ms
 void main_loop()
 {
-	U8 button_state;
+	up_shift_in = HAL_GPIO_ReadPin(Up_Shift_In_GPIO_Port, Up_Shift_In_Pin);
+    down_shift_in = HAL_GPIO_ReadPin(Down_Shift_In_GPIO_Port, Down_Shift_In_Pin);
 
-	// If the button is pressed send a can command to another to change the LED state
-	// To on or off depending on the button
-	button_state = HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin);
+	slow_clutch_in = HAL_GPIO_ReadPin(Slow_Clutch_In_GPIO_Port,Slow_Clutch_In_Pin);
+	fast_clutch_in = HAL_GPIO_ReadPin(Fast_Clutch_In_GPIO_Port,Fast_Clutch_In_Pin);
+
+	face_btn0_in = HAL_GPIO_ReadPin(Face_BTN0_In_GPIO_Port, Face_BTN0_In_Pin);
+	face_btn1_in = HAL_GPIO_ReadPin(Face_BTN1_In_GPIO_Port, Face_BTN1_In_Pin);
+	face_btn2_in = HAL_GPIO_ReadPin(Face_BTN2_In_GPIO_Port, Face_BTN2_In_Pin);
+	face_btn3_in = HAL_GPIO_ReadPin(Face_BTN3_In_GPIO_Port, Face_BTN3_In_Pin);
+
+	rot_sw0_in = HAL_GPIO_ReadPin(Rot_SW0_In_GPIO_Port, Rot_SW0_In_Pin);
+	rot_sw1_in = HAL_GPIO_ReadPin(Rot_SW1_In_GPIO_Port, Rot_SW1_In_Pin);
+	rot_sw2_in = HAL_GPIO_ReadPin(Rot_SW2_In_GPIO_Port, Rot_SW2_In_Pin);
+	rot_sw3_in = HAL_GPIO_ReadPin(Rot_SW3_In_GPIO_Port, Rot_SW3_In_Pin);
+
+	update_and_queue_param_u8(&sw_upshift, up_shift_in);
+	update_and_queue_param_u8(&sw_downshift, down_shift_in);
+
+	update_and_queue_param_u8(&sw_clutch_fast, fast_clutch_in);
+	update_and_queue_param_u8(&sw_clutch_slow, slow_clutch_in);
+
+	update_and_queue_param_u8(&sw_0, face_btn0_in);
+	update_and_queue_param_u8(&sw_1, face_btn1_in);
+	update_and_queue_param_u8(&sw_2, face_btn2_in);
+	update_and_queue_param_u8(&sw_3, face_btn3_in);
+
+	rot_result = (rot_sw3_in << 3) | (rot_sw2_in << 2) | (rot_sw1_in << 1) | rot_sw0_in;
+	update_and_queue_param_u8(&sw_dial, rot_result);
+
+
+	/*button_state = HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin);
 
 	// Logic to only send one message per change in button state
 	if (button_state != last_button_state)
@@ -83,7 +133,7 @@ void main_loop()
 		{
 			// error sending command
 		}
-	}
+	}*/
 }
 
 
@@ -96,7 +146,7 @@ void main_loop()
 //  correctly
 static void change_led_state(U8 sender, void* parameter, U8 remote_param, U8 UNUSED1, U8 UNUSED2, U8 UNUSED3)
 {
-	HAL_GPIO_WritePin(GRN_LED_GPIO_Port, GRN_LED_Pin, !!remote_param);
+	//HAL_GPIO_WritePin(GRN_LED_GPIO_Port, GRN_LED_Pin, !!remote_param);
 	return;
 }
 
@@ -108,7 +158,7 @@ void init_error(void)
 {
 	while (1)
 	{
-		HAL_GPIO_TogglePin(GRN_LED_GPIO_Port, GRN_LED_Pin);
+		//HAL_GPIO_TogglePin(GRN_LED_GPIO_Port, GRN_LED_Pin);
 		HAL_Delay(250);
 	}
 }

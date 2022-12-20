@@ -1,0 +1,43 @@
+module_name: "steering_wheel_module_23"
+
+
+buckets:
+    bucket_1:
+        frequency_hz: 100
+        parameters:
+            sw_upshift:
+              ADC: NON_ADC
+              sensor: NON_ADC
+              samples_buffered: 1
+            sw_downshift:
+              ADC: NON_ADC
+              sensor: NON_ADC
+              samples_buffered: 1
+            sw_clutch_fast:
+              ADC: NON_ADC
+              sensor: NON_ADC
+              samples_buffered: 1
+            sw_clutch_slow:
+              ADC: NON_ADC
+              sensor: NON_ADC
+              samples_buffered: 1
+            sw_0:
+              ADC: NON_ADC
+              sensor: NON_ADC
+              samples_buffered: 1
+            sw_1:
+              ADC: NON_ADC
+              sensor: NON_ADC
+              samples_buffered: 1
+            sw_2:
+              ADC: NON_ADC
+              sensor: NON_ADC
+              samples_buffered: 1
+            sw_3:
+              ADC: NON_ADC
+              sensor: NON_ADC
+              samples_buffered: 1
+            sw_dial:
+              ADC: NON_ADC
+              sensor: NON_ADC
+              samples_buffered: 1
