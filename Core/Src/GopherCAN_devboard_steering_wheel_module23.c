@@ -63,6 +63,7 @@ void can_buffer_handling_loop()
 }
 
 	U8 button_state;
+
 	U8 up_shift_in;
 	U8 down_shift_in;
 
@@ -83,6 +84,8 @@ void can_buffer_handling_loop()
 	//will store the bitwise version of all rotary inputs, Ex: rot0 = 1, rot1 = 1, rot2 = 1, and rot3 =1  --> rot_rawResult = 00001111
 	U8 rot_result;
 
+	//U8 raw_rotTurns_left_to_right[16] = {0, 1, 5, 4, 6, 7, 15, 14, 12, 13, 9, 8, 10, 11, 3, 2};
+	U8 rot_corrections[16] = {0, 1, 15, 14, 3, 2, 4, 5, 11, 10, 12, 13, 8, 9, 7, 6};
 
 
 // main_loop
@@ -90,6 +93,7 @@ void can_buffer_handling_loop()
 //  called every 10ms
 void main_loop()
 {
+	//reading in steering wheel buttons through GPIO pots
 	up_shift_in = HAL_GPIO_ReadPin(Up_Shift_In_GPIO_Port, Up_Shift_In_Pin);
     down_shift_in = HAL_GPIO_ReadPin(Down_Shift_In_GPIO_Port, Down_Shift_In_Pin);
 
@@ -106,6 +110,7 @@ void main_loop()
 	rot_sw2_in = HAL_GPIO_ReadPin(Rot_SW2_In_GPIO_Port, Rot_SW2_In_Pin);
 	rot_sw3_in = HAL_GPIO_ReadPin(Rot_SW3_In_GPIO_Port, Rot_SW3_In_Pin);
 
+	//Sending each variable through CAN bus
 	update_and_queue_param_u8(&sw_upshift, up_shift_in);
 	update_and_queue_param_u8(&sw_downshift, down_shift_in);
 
@@ -117,23 +122,12 @@ void main_loop()
 	update_and_queue_param_u8(&sw_2, face_btn2_in);
 	update_and_queue_param_u8(&sw_3, face_btn3_in);
 
+	//performing bitwise operations to read in rotary positons
+	//left to right is increasing, restarts to 0 at end of range
 	rot_result = (rot_sw3_in << 3) | (rot_sw2_in << 2) | (rot_sw1_in << 1) | rot_sw0_in;
+	rot_result = rot_corrections[rot_result];
 	update_and_queue_param_u8(&sw_dial, rot_result);
 
-
-	/*button_state = HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin);
-
-	// Logic to only send one message per change in button state
-	if (button_state != last_button_state)
-	{
-		last_button_state = button_state;
-
-		if (send_can_command(PRIO_HIGH, ALL_MODULES_ID, SET_LED_STATE,
-				!button_state, !button_state, !button_state, !button_state))
-		{
-			// error sending command
-		}
-	}*/
 }
 
 
