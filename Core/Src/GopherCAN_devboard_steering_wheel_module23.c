@@ -10,7 +10,7 @@ CAN_HandleTypeDef* example_hcan;
 
 
 // Use this to define what module this board will be
-#define THIS_MODULE_ID PDM_ID
+#define THIS_MODULE_ID PLM_ID
 
 
 // some global variables for examples
@@ -30,13 +30,10 @@ void init(CAN_HandleTypeDef* hcan_ptr)
 	// initialize CAN
 	// NOTE: CAN will also need to be added in CubeMX and code must be generated
 	// Check the STM_CAN repo for the file "F0xx CAN Config Settings.pptx" for the correct settings
-	if (init_can(example_hcan, THIS_MODULE_ID, BXTYPE_MASTER))
+	if (init_can(GCAN0, example_hcan, THIS_MODULE_ID, BXTYPE_MASTER))
 	{
 		init_error();
 	}
-
-	// enable all of the variables in GopherCAN for testing
-	set_all_params_state(TRUE);
 
 	// Set the function pointer of SET_LED_STATE. This means the function change_led_state()
 	// will be run whenever this can command is sent to the module
@@ -59,7 +56,7 @@ void can_buffer_handling_loop()
 	}
 
 	// handle the transmission hardware for each CAN bus
-	service_can_tx_hardware(example_hcan);
+	service_can_tx(example_hcan);
 }
 
 	U8 button_state;
@@ -93,6 +90,8 @@ void can_buffer_handling_loop()
 //  called every 10ms
 void main_loop()
 {
+	static U32 lastHeartbeat = 0;
+
 	//reading in steering wheel buttons through GPIO pots
 	up_shift_in = HAL_GPIO_ReadPin(Up_Shift_In_GPIO_Port, Up_Shift_In_Pin);
     down_shift_in = HAL_GPIO_ReadPin(Down_Shift_In_GPIO_Port, Down_Shift_In_Pin);
@@ -111,22 +110,28 @@ void main_loop()
 	rot_sw3_in = HAL_GPIO_ReadPin(Rot_SW3_In_GPIO_Port, Rot_SW3_In_Pin);
 
 	//Sending each variable through CAN bus
-	update_and_queue_param_u8(&sw_upshift, up_shift_in);
-	update_and_queue_param_u8(&sw_downshift, down_shift_in);
+	update_and_queue_param_u8(&swUpshift_state, !up_shift_in);
+	update_and_queue_param_u8(&swDownshift_state, !down_shift_in);
 
-	update_and_queue_param_u8(&sw_clutch_fast, fast_clutch_in);
-	update_and_queue_param_u8(&sw_clutch_slow, slow_clutch_in);
+	update_and_queue_param_u8(&swFastClutch_state, !fast_clutch_in);
+	update_and_queue_param_u8(&swSlowClutch_state, !slow_clutch_in);
 
-	update_and_queue_param_u8(&sw_0, face_btn0_in);
-	update_and_queue_param_u8(&sw_1, face_btn1_in);
-	update_and_queue_param_u8(&sw_2, face_btn2_in);
-	update_and_queue_param_u8(&sw_3, face_btn3_in);
+	update_and_queue_param_u8(&swButon0_state, !face_btn0_in);
+	update_and_queue_param_u8(&swButon1_state, !face_btn1_in);
+	update_and_queue_param_u8(&swButon2_state, !face_btn2_in);
+	update_and_queue_param_u8(&swButon3_state, !face_btn3_in);
 
 	//performing bitwise operations to read in rotary positons
 	//left to right is increasing, restarts to 0 at end of range
-	rot_result = (rot_sw3_in << 3) | (rot_sw2_in << 2) | (rot_sw1_in << 1) | rot_sw0_in;
-	rot_result = rot_corrections[rot_result];
-	update_and_queue_param_u8(&sw_dial, rot_result);
+	rot_result = (rot_sw3_in << 2) | (rot_sw2_in << 3) | (rot_sw1_in << 1) | rot_sw0_in;
+	rot_result = 15 - rot_result;
+	update_and_queue_param_u8(&swDial_ul, rot_result);
+
+	if (HAL_GetTick() - lastHeartbeat > HEARTBEAT_MS_BETWEEN)
+	{
+		lastHeartbeat = HAL_GetTick();
+		HAL_GPIO_TogglePin(HBEAT_LED_GPIO_Port, HBEAT_LED_Pin);
+	}
 
 }
 

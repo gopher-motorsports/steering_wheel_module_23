@@ -43,20 +43,14 @@
 /* Private variables ---------------------------------------------------------*/
 CAN_HandleTypeDef hcan1;
 
-/* Definitions for main_task */
-osThreadId_t main_taskHandle;
-const osThreadAttr_t main_task_attributes = {
-  .name = "main_task",
-  .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for buffer_handling */
-osThreadId_t buffer_handlingHandle;
-const osThreadAttr_t buffer_handling_attributes = {
-  .name = "buffer_handling",
-  .stack_size = 256 * 4,
-  .priority = (osPriority_t) osPriorityAboveNormal,
-};
+UART_HandleTypeDef huart1;
+
+osThreadId main_taskHandle;
+uint32_t main_taskBuffer[ 512 ];
+osStaticThreadDef_t main_taskControlBlock;
+osThreadId buffer_handlingHandle;
+uint32_t buffer_handlingBuffer[ 512 ];
+osStaticThreadDef_t buffer_handlingControlBlock;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -65,8 +59,9 @@ const osThreadAttr_t buffer_handling_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_CAN1_Init(void);
-void task_MainTask(void *argument);
-void task_BufferHandling(void *argument);
+static void MX_USART1_UART_Init(void);
+void task_MainTask(void const * argument);
+void task_BufferHandling(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -106,14 +101,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_CAN1_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
   init(&hcan1);
   gsense_init(&hcan1, GSENSE_LED_GPIO_Port, GSENSE_LED_Pin);
   /* USER CODE END 2 */
-
-  /* Init scheduler */
-  osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -132,19 +125,17 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of main_task */
-  main_taskHandle = osThreadNew(task_MainTask, NULL, &main_task_attributes);
+  /* definition and creation of main_task */
+  osThreadStaticDef(main_task, task_MainTask, osPriorityNormal, 0, 512, main_taskBuffer, &main_taskControlBlock);
+  main_taskHandle = osThreadCreate(osThread(main_task), NULL);
 
-  /* creation of buffer_handling */
-  buffer_handlingHandle = osThreadNew(task_BufferHandling, NULL, &buffer_handling_attributes);
+  /* definition and creation of buffer_handling */
+  osThreadStaticDef(buffer_handling, task_BufferHandling, osPriorityAboveNormal, 0, 512, buffer_handlingBuffer, &buffer_handlingControlBlock);
+  buffer_handlingHandle = osThreadCreate(osThread(buffer_handling), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
-
-  /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
   osKernelStart();
@@ -231,14 +222,14 @@ static void MX_CAN1_Init(void)
 
   /* USER CODE END CAN1_Init 1 */
   hcan1.Instance = CAN1;
-  hcan1.Init.Prescaler = 16;
+  hcan1.Init.Prescaler = 5;
   hcan1.Init.Mode = CAN_MODE_NORMAL;
   hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
-  hcan1.Init.TimeSeg1 = CAN_BS1_1TQ;
+  hcan1.Init.TimeSeg1 = CAN_BS1_6TQ;
   hcan1.Init.TimeSeg2 = CAN_BS2_1TQ;
   hcan1.Init.TimeTriggeredMode = DISABLE;
-  hcan1.Init.AutoBusOff = DISABLE;
-  hcan1.Init.AutoWakeUp = DISABLE;
+  hcan1.Init.AutoBusOff = ENABLE;
+  hcan1.Init.AutoWakeUp = ENABLE;
   hcan1.Init.AutoRetransmission = DISABLE;
   hcan1.Init.ReceiveFifoLocked = DISABLE;
   hcan1.Init.TransmitFifoPriority = DISABLE;
@@ -249,6 +240,39 @@ static void MX_CAN1_Init(void)
   /* USER CODE BEGIN CAN1_Init 2 */
 
   /* USER CODE END CAN1_Init 2 */
+
+}
+
+/**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
 
 }
 
@@ -302,14 +326,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA9 PA10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_9|GPIO_PIN_10;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
@@ -323,7 +339,7 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_task_MainTask */
-void task_MainTask(void *argument)
+void task_MainTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
@@ -342,7 +358,7 @@ void task_MainTask(void *argument)
 * @retval None
 */
 /* USER CODE END Header_task_BufferHandling */
-void task_BufferHandling(void *argument)
+void task_BufferHandling(void const * argument)
 {
   /* USER CODE BEGIN task_BufferHandling */
   /* Infinite loop */

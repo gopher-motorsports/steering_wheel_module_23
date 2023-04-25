@@ -4,6 +4,8 @@
 #ifndef GOPHERCAN_DEVBOARD_EXAMPLE_H
 #define GOPHERCAN_DEVBOARD_EXAMPLE_H
 
+#define HEARTBEAT_MS_BETWEEN 500
+
 #include "GopherCAN.h"
 
 void init(CAN_HandleTypeDef* hcan_ptr);
