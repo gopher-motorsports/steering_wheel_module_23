@@ -4,6 +4,7 @@
 #include <steering_wheel.h>
 #include "main.h"
 #include "gopher_sense.h"
+#include "GopherCAN.h"
 
 // the HAL_CAN struct. This example only works for a single CAN bus
 CAN_HandleTypeDef* example_hcan;
@@ -20,6 +21,65 @@ U8 last_button_state = 0;
 // the CAN callback function used in this example
 static void change_led_state(U8 sender, void* UNUSED_LOCAL_PARAM, U8 remote_param, U8 UNUSED1, U8 UNUSED2, U8 UNUSED3);
 static void init_error(void);
+
+BUTTON swUpshift = {
+    .param = &swUpshift_state,
+    .port = Up_Shift_In_GPIO_Port,
+    .pin = Up_Shift_In_Pin
+};
+
+BUTTON swDownshift = {
+    .param = &swDownshift_state,
+    .port = Down_Shift_In_GPIO_Port,
+    .pin = Down_Shift_In_Pin
+};
+
+BUTTON swFastClutch = {
+    .param = &swFastClutch_state,
+    .port = Fast_Clutch_In_GPIO_Port,
+    .pin = Fast_Clutch_In_Pin
+};
+
+BUTTON swSlowClutch = {
+    .param = &swSlowClutch_state,
+    .port = Slow_Clutch_In_GPIO_Port,
+    .pin = Slow_Clutch_In_Pin
+};
+
+BUTTON swButon0 = {
+    .param = &swButon0_state,
+    .port = Face_BTN0_In_GPIO_Port,
+    .pin = Face_BTN0_In_Pin
+};
+
+BUTTON swButon1 = {
+    .param = &swButon1_state,
+    .port = Face_BTN1_In_GPIO_Port,
+    .pin = Face_BTN1_In_Pin
+};
+
+BUTTON swButon2 = {
+    .param = &swButon2_state,
+    .port = Face_BTN2_In_GPIO_Port,
+    .pin = Face_BTN2_In_Pin
+};
+
+BUTTON swButon3 = {
+    .param = &swButon3_state,
+    .port = Face_BTN3_In_GPIO_Port,
+    .pin = Face_BTN3_In_Pin
+};
+
+BUTTON buttons[NUM_OF_BUTTONS] = {
+    swUpshift,
+    swDownshift,
+    swFastClutch,
+    swSlowClutch,
+    swButon0,
+    swButon1,
+    swButon2,
+    swButon3,
+};
 
 // init
 //  What needs to happen on startup in order to run GopherCAN
@@ -43,14 +103,10 @@ void init(CAN_HandleTypeDef* hcan_ptr)
 	}
 
 	// lock param sending for all of the buttons
-	lock_param_sending(&swUpshift_state);
-	lock_param_sending(&swDownshift_state);
-	lock_param_sending(&swFastClutch_state);
-	lock_param_sending(&swSlowClutch_state);
-	lock_param_sending(&swButon0_state);
-	lock_param_sending(&swButon1_state);
-	lock_param_sending(&swButon2_state);
-	lock_param_sending(&swButon3_state);
+	for (U8 i = 0; i < NUM_OF_BUTTONS; i++) {
+	    lock_param_sending(buttons[i].param);
+	}
+
 	lock_param_sending(&swDial_ul);
 }
 
@@ -72,18 +128,6 @@ void can_buffer_handling_loop()
 
 U8 button_state;
 
-U8 up_shift_in;
-U8 down_shift_in;
-
-U8 slow_clutch_in;
-U8 fast_clutch_in;
-
-U8 face_btn0_in;
-U8 face_btn1_in;
-U8 face_btn2_in;
-U8 face_btn3_in;
-
-
 U8 rot_sw0_in;
 U8 rot_sw1_in;
 U8 rot_sw2_in;
@@ -101,16 +145,15 @@ void main_loop()
 	static U32 lastHeartbeat = 0;
 
 	//reading in steering wheel buttons through GPIO pots
-	up_shift_in = HAL_GPIO_ReadPin(Up_Shift_In_GPIO_Port, Up_Shift_In_Pin);
-    down_shift_in = HAL_GPIO_ReadPin(Down_Shift_In_GPIO_Port, Down_Shift_In_Pin);
-
-	slow_clutch_in = HAL_GPIO_ReadPin(Slow_Clutch_In_GPIO_Port,Slow_Clutch_In_Pin);
-	fast_clutch_in = HAL_GPIO_ReadPin(Fast_Clutch_In_GPIO_Port,Fast_Clutch_In_Pin);
-
-	face_btn0_in = HAL_GPIO_ReadPin(Face_BTN0_In_GPIO_Port, Face_BTN0_In_Pin);
-	face_btn1_in = HAL_GPIO_ReadPin(Face_BTN1_In_GPIO_Port, Face_BTN1_In_Pin);
-	face_btn2_in = HAL_GPIO_ReadPin(Face_BTN2_In_GPIO_Port, Face_BTN2_In_Pin);
-	face_btn3_in = HAL_GPIO_ReadPin(Face_BTN3_In_GPIO_Port, Face_BTN3_In_Pin);
+	for (U8 i = 0; i < NUM_OF_BUTTONS; i++) {
+	    BUTTON btn = buttons[i];
+	    U8 new_state = HAL_GPIO_ReadPin(btn.port, btn.pin);
+	    if (new_state != btn.param->data) {
+	        // button state has changed, send message immediately
+	        send_parameter(btn.param);
+	    }
+	    btn.param->data = new_state;
+    }
 
 	rot_sw0_in = HAL_GPIO_ReadPin(Rot_SW0_In_GPIO_Port, Rot_SW0_In_Pin);
 	rot_sw1_in = HAL_GPIO_ReadPin(Rot_SW1_In_GPIO_Port, Rot_SW1_In_Pin);
@@ -121,9 +164,6 @@ void main_loop()
 	//left to right is increasing, restarts to 0 at end of range
 	rot_result = (rot_sw3_in << 2) | (rot_sw2_in << 3) | (rot_sw1_in << 1) | rot_sw0_in;
 	rot_result = 15 - rot_result;
-
-	// check if the values of any of the buttons has changed. If so immediately send
-	// TODO
 
 	if (HAL_GetTick() - lastHeartbeat > HEARTBEAT_MS_BETWEEN)
 	{
