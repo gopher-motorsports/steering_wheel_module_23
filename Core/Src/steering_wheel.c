@@ -1,7 +1,7 @@
 // GopherCAN_devboard_example.c
 //  This is a bare-bones module file that can be used in order to make a module main file
 
-#include "GopherCAN_devboard_example.h"
+#include <steering_wheel.h>
 #include "main.h"
 #include "gopher_sense.h"
 
@@ -41,6 +41,17 @@ void init(CAN_HandleTypeDef* hcan_ptr)
 	{
 		init_error();
 	}
+
+	// lock param sending for all of the buttons
+	lock_param_sending(&swUpshift_state);
+	lock_param_sending(&swDownshift_state);
+	lock_param_sending(&swFastClutch_state);
+	lock_param_sending(&swSlowClutch_state);
+	lock_param_sending(&swButon0_state);
+	lock_param_sending(&swButon1_state);
+	lock_param_sending(&swButon2_state);
+	lock_param_sending(&swButon3_state);
+	lock_param_sending(&swDial_ul);
 }
 
 
@@ -59,30 +70,27 @@ void can_buffer_handling_loop()
 	service_can_tx(example_hcan);
 }
 
-	U8 button_state;
+U8 button_state;
 
-	U8 up_shift_in;
-	U8 down_shift_in;
+U8 up_shift_in;
+U8 down_shift_in;
 
-	U8 slow_clutch_in;
-	U8 fast_clutch_in;
+U8 slow_clutch_in;
+U8 fast_clutch_in;
 
-	U8 face_btn0_in;
-	U8 face_btn1_in;
-	U8 face_btn2_in;
-	U8 face_btn3_in;
+U8 face_btn0_in;
+U8 face_btn1_in;
+U8 face_btn2_in;
+U8 face_btn3_in;
 
 
-	U8 rot_sw0_in;
-	U8 rot_sw1_in;
-	U8 rot_sw2_in;
-	U8 rot_sw3_in;
+U8 rot_sw0_in;
+U8 rot_sw1_in;
+U8 rot_sw2_in;
+U8 rot_sw3_in;
 
-	//will store the bitwise version of all rotary inputs, Ex: rot0 = 1, rot1 = 1, rot2 = 1, and rot3 =1  --> rot_rawResult = 00001111
-	U8 rot_result;
-
-	//U8 raw_rotTurns_left_to_right[16] = {0, 1, 5, 4, 6, 7, 15, 14, 12, 13, 9, 8, 10, 11, 3, 2};
-	U8 rot_corrections[16] = {0, 1, 15, 14, 3, 2, 4, 5, 11, 10, 12, 13, 8, 9, 7, 6};
+//will store the bitwise version of all rotary inputs, Ex: rot0 = 1, rot1 = 1, rot2 = 1, and rot3 =1  --> rot_rawResult = 00001111
+U8 rot_result;
 
 
 // main_loop
@@ -109,23 +117,13 @@ void main_loop()
 	rot_sw2_in = HAL_GPIO_ReadPin(Rot_SW2_In_GPIO_Port, Rot_SW2_In_Pin);
 	rot_sw3_in = HAL_GPIO_ReadPin(Rot_SW3_In_GPIO_Port, Rot_SW3_In_Pin);
 
-	//Sending each variable through CAN bus
-	update_and_queue_param_u8(&swUpshift_state, !up_shift_in);
-	update_and_queue_param_u8(&swDownshift_state, !down_shift_in);
-
-	update_and_queue_param_u8(&swFastClutch_state, !fast_clutch_in);
-	update_and_queue_param_u8(&swSlowClutch_state, !slow_clutch_in);
-
-	update_and_queue_param_u8(&swButon0_state, !face_btn0_in);
-	update_and_queue_param_u8(&swButon1_state, !face_btn1_in);
-	update_and_queue_param_u8(&swButon2_state, !face_btn2_in);
-	update_and_queue_param_u8(&swButon3_state, !face_btn3_in);
-
 	//performing bitwise operations to read in rotary positons
 	//left to right is increasing, restarts to 0 at end of range
 	rot_result = (rot_sw3_in << 2) | (rot_sw2_in << 3) | (rot_sw1_in << 1) | rot_sw0_in;
 	rot_result = 15 - rot_result;
-	update_and_queue_param_u8(&swDial_ul, rot_result);
+
+	// check if the values of any of the buttons has changed. If so immediately send
+	// TODO
 
 	if (HAL_GetTick() - lastHeartbeat > HEARTBEAT_MS_BETWEEN)
 	{
