@@ -17,6 +17,6 @@
 //#define NO_FILTER
 
 // if defined, 11-bit ID data messages are filtered out
-//#define IGNORE_DATA
+#define IGNORE_DATA
 
 #endif
