@@ -70,15 +70,15 @@ BUTTON swButon3 = {
     .pin = Face_BTN3_In_Pin
 };
 
-BUTTON buttons[NUM_OF_BUTTONS] = {
-    swUpshift,
-    swDownshift,
-    swFastClutch,
-    swSlowClutch,
-    swButon0,
-    swButon1,
-    swButon2,
-    swButon3,
+BUTTON* buttons[NUM_OF_BUTTONS] = {
+    &swUpshift,
+    &swDownshift,
+    &swFastClutch,
+    &swSlowClutch,
+    &swButon0,
+    &swButon1,
+    &swButon2,
+    &swButon3,
 };
 
 // init
@@ -104,10 +104,10 @@ void init(CAN_HandleTypeDef* hcan_ptr)
 
 	// lock param sending for all of the buttons
 	for (U8 i = 0; i < NUM_OF_BUTTONS; i++) {
-	    lock_param_sending(buttons[i].param);
+	    lock_param_sending(&buttons[i]->param->info);
 	}
 
-	lock_param_sending(&swDial_ul);
+	lock_param_sending(&swDial_ul.info);
 }
 
 
@@ -146,13 +146,13 @@ void main_loop()
 
 	//reading in steering wheel buttons through GPIO pots
 	for (U8 i = 0; i < NUM_OF_BUTTONS; i++) {
-	    BUTTON btn = buttons[i];
-	    U8 new_state = HAL_GPIO_ReadPin(btn.port, btn.pin);
-	    if (new_state != btn.param->data) {
+	    BUTTON* btn = buttons[i];
+	    U8 new_state = !HAL_GPIO_ReadPin(btn->port, btn->pin);
+	    if (new_state != btn->param->data) {
 	        // button state has changed, send message immediately
-	        send_parameter(btn.param);
+	        send_parameter(&btn->param->info);
 	    }
-	    btn.param->data = new_state;
+	    btn->param->data = new_state;
     }
 
 	rot_sw0_in = HAL_GPIO_ReadPin(Rot_SW0_In_GPIO_Port, Rot_SW0_In_Pin);

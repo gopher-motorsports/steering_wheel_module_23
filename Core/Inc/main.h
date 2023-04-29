@@ -57,6 +57,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define Down_Shift_In_Pin GPIO_PIN_2
+#define Down_Shift_In_GPIO_Port GPIOC
+#define Up_Shift_In_Pin GPIO_PIN_3
+#define Up_Shift_In_GPIO_Port GPIOC
 #define GSENSE_LED_Pin GPIO_PIN_7
 #define GSENSE_LED_GPIO_Port GPIOA
 #define HBEAT_LED_Pin GPIO_PIN_4
@@ -81,10 +85,6 @@ void Error_Handler(void);
 #define Fast_Clutch_In_GPIO_Port GPIOC
 #define Slow_Clutch_In_Pin GPIO_PIN_11
 #define Slow_Clutch_In_GPIO_Port GPIOC
-#define Down_Shift_In_Pin GPIO_PIN_4
-#define Down_Shift_In_GPIO_Port GPIOB
-#define Up_Shift_In_Pin GPIO_PIN_5
-#define Up_Shift_In_GPIO_Port GPIOB
 #define BUTTON_Pin GPIO_PIN_7
 #define BUTTON_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */

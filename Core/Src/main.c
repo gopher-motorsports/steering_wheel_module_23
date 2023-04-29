@@ -17,13 +17,13 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include <steering_wheel.h>
 #include "main.h"
 #include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "gopher_sense.h"
+#include "steering_wheel.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -286,8 +286,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
@@ -295,6 +295,14 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(HBEAT_LED_GPIO_Port, HBEAT_LED_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : Down_Shift_In_Pin Up_Shift_In_Pin Face_BTN3_In_Pin Face_BTN2_In_Pin
+                           Face_BTN1_In_Pin Face_BTN0_In_Pin Fast_Clutch_In_Pin Slow_Clutch_In_Pin */
+  GPIO_InitStruct.Pin = Down_Shift_In_Pin|Up_Shift_In_Pin|Face_BTN3_In_Pin|Face_BTN2_In_Pin
+                          |Face_BTN1_In_Pin|Face_BTN0_In_Pin|Fast_Clutch_In_Pin|Slow_Clutch_In_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : GSENSE_LED_Pin */
   GPIO_InitStruct.Pin = GSENSE_LED_Pin;
@@ -311,20 +319,12 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(HBEAT_LED_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : Rot_SW3_In_Pin Rot_SW2_In_Pin Rot_SW1_In_Pin Rot_SW0_In_Pin
-                           Down_Shift_In_Pin Up_Shift_In_Pin BUTTON_Pin */
+                           BUTTON_Pin */
   GPIO_InitStruct.Pin = Rot_SW3_In_Pin|Rot_SW2_In_Pin|Rot_SW1_In_Pin|Rot_SW0_In_Pin
-                          |Down_Shift_In_Pin|Up_Shift_In_Pin|BUTTON_Pin;
+                          |BUTTON_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : Face_BTN3_In_Pin Face_BTN2_In_Pin Face_BTN1_In_Pin Face_BTN0_In_Pin
-                           Fast_Clutch_In_Pin Slow_Clutch_In_Pin */
-  GPIO_InitStruct.Pin = Face_BTN3_In_Pin|Face_BTN2_In_Pin|Face_BTN1_In_Pin|Face_BTN0_In_Pin
-                          |Fast_Clutch_In_Pin|Slow_Clutch_In_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 }
 
@@ -346,7 +346,7 @@ void task_MainTask(void const * argument)
   for(;;)
   {
 	  main_loop();
-    osDelay(10);
+    osDelay(1);
   }
   /* USER CODE END 5 */
 }
