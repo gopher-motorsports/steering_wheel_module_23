@@ -165,12 +165,13 @@ void main_loop()
 	rot_result = (rot_sw3_in << 2) | (rot_sw2_in << 3) | (rot_sw1_in << 1) | rot_sw0_in;
 	rot_result = 15 - rot_result;
 
+	update_and_queue_param_u8(&swDial_ul, rot_result);
+
 	if (HAL_GetTick() - lastHeartbeat > HEARTBEAT_MS_BETWEEN)
 	{
 		lastHeartbeat = HAL_GetTick();
 		HAL_GPIO_TogglePin(HBEAT_LED_GPIO_Port, HBEAT_LED_Pin);
 	}
-
 }
 
 
