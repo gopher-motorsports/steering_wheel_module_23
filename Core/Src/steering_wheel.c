@@ -16,6 +16,7 @@ CAN_HandleTypeDef* example_hcan;
 
 // some global variables for examples
 U8 last_button_state = 0;
+U8 display_page = 0;
 
 
 // the CAN callback function used in this example
@@ -149,11 +150,17 @@ void main_loop()
 	    BUTTON* btn = buttons[i];
 	    U8 new_state = !HAL_GPIO_ReadPin(btn->port, btn->pin);
 	    if (new_state != btn->param->data) {
-	        // button state has changed, send message immediately
-	        send_parameter(&btn->param->info);
+	    	if(btn->param == &DISPLAY_PAGE_CHANGE_BUTTON) {
+	    		display_page = (display_page + 1) % NUM_DISPLAY_PAGES;
+	    	} else {
+				// button state has changed, send message immediately
+				send_parameter(&btn->param->info);
+	    	}
 	    }
 	    btn->param->data = new_state;
     }
+
+	update_and_queue_param_u8(&DISPLAY_PAGE_CHANGE_BUTTON, display_page);
 
 	rot_sw0_in = HAL_GPIO_ReadPin(Rot_SW0_In_GPIO_Port, Rot_SW0_In_Pin);
 	rot_sw1_in = HAL_GPIO_ReadPin(Rot_SW1_In_GPIO_Port, Rot_SW1_In_Pin);
