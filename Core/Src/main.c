@@ -46,10 +46,10 @@ CAN_HandleTypeDef hcan1;
 UART_HandleTypeDef huart1;
 
 osThreadId main_taskHandle;
-uint32_t main_taskBuffer[ 512 ];
+uint32_t main_taskBuffer[ 1024 ];
 osStaticThreadDef_t main_taskControlBlock;
 osThreadId buffer_handlingHandle;
-uint32_t buffer_handlingBuffer[ 512 ];
+uint32_t buffer_handlingBuffer[ 1024 ];
 osStaticThreadDef_t buffer_handlingControlBlock;
 /* USER CODE BEGIN PV */
 
@@ -126,11 +126,11 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of main_task */
-  osThreadStaticDef(main_task, task_MainTask, osPriorityNormal, 0, 512, main_taskBuffer, &main_taskControlBlock);
+  osThreadStaticDef(main_task, task_MainTask, osPriorityNormal, 0, 1024, main_taskBuffer, &main_taskControlBlock);
   main_taskHandle = osThreadCreate(osThread(main_task), NULL);
 
   /* definition and creation of buffer_handling */
-  osThreadStaticDef(buffer_handling, task_BufferHandling, osPriorityAboveNormal, 0, 512, buffer_handlingBuffer, &buffer_handlingControlBlock);
+  osThreadStaticDef(buffer_handling, task_BufferHandling, osPriorityAboveNormal, 0, 1024, buffer_handlingBuffer, &buffer_handlingControlBlock);
   buffer_handlingHandle = osThreadCreate(osThread(buffer_handling), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -176,12 +176,11 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 12;
   RCC_OscInitStruct.PLL.PLLN = 160;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 2;
@@ -286,6 +285,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();

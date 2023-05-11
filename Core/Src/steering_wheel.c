@@ -11,12 +11,12 @@ CAN_HandleTypeDef* example_hcan;
 
 
 // Use this to define what module this board will be
-#define THIS_MODULE_ID PLM_ID
+#define THIS_MODULE_ID SWM_ID
 
 
 // some global variables for examples
 U8 last_button_state = 0;
-U8 display_page = 0;
+U8 display_page = 1;
 
 
 // the CAN callback function used in this example
@@ -76,7 +76,7 @@ BUTTON* buttons[NUM_OF_BUTTONS] = {
     &swDownshift,
     &swFastClutch,
     &swSlowClutch,
-    &swButon0,
+	&swButon0,
     &swButon1,
     &swButon2,
     &swButon3,
@@ -128,6 +128,7 @@ void can_buffer_handling_loop()
 }
 
 U8 button_state;
+U8 last_displayPageButton_state;
 
 U8 rot_sw0_in;
 U8 rot_sw1_in;
@@ -150,17 +151,19 @@ void main_loop()
 	    BUTTON* btn = buttons[i];
 	    U8 new_state = !HAL_GPIO_ReadPin(btn->port, btn->pin);
 	    if (new_state != btn->param->data) {
-	    	if(btn->param == &DISPLAY_PAGE_CHANGE_BUTTON) {
-	    		display_page = (display_page + 1) % NUM_DISPLAY_PAGES;
-	    	} else {
-				// button state has changed, send message immediately
-				send_parameter(&btn->param->info);
-	    	}
+			// button state has changed, send message immediately
+			send_parameter(&btn->param->info);
 	    }
 	    btn->param->data = new_state;
     }
 
-	update_and_queue_param_u8(&DISPLAY_PAGE_CHANGE_BUTTON, display_page);
+	U8 new_displayPageButton_state = !HAL_GPIO_ReadPin(DISPLAY_PAGE_CHANGE_BUTTON.port, DISPLAY_PAGE_CHANGE_BUTTON.pin);
+	if(new_displayPageButton_state > last_displayPageButton_state) {
+		display_page = (display_page + 1) % (NUM_DISPLAY_PAGES);
+	}
+	last_displayPageButton_state = new_displayPageButton_state;
+
+	update_and_queue_param_u8(&displayPage_state, display_page + 1);
 
 	rot_sw0_in = HAL_GPIO_ReadPin(Rot_SW0_In_GPIO_Port, Rot_SW0_In_Pin);
 	rot_sw1_in = HAL_GPIO_ReadPin(Rot_SW1_In_GPIO_Port, Rot_SW1_In_Pin);

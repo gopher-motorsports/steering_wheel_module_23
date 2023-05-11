@@ -5,12 +5,12 @@
 #define GOPHERCAN_DEVBOARD_EXAMPLE_H
 
 #define HEARTBEAT_MS_BETWEEN 500
-#define NUM_DISPLAY_PAGES 4
+#define NUM_DISPLAY_PAGES 2
 
 #include "GopherCAN.h"
 #include "gopher_sense.h"
 
-#define DISPLAY_PAGE_CHANGE_BUTTON (swButon0_state)
+#define DISPLAY_PAGE_CHANGE_BUTTON (swButon0)
 
 void init(CAN_HandleTypeDef* hcan_ptr);
 void can_buffer_handling_loop();
