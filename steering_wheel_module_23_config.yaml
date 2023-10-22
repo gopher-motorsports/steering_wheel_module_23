@@ -3,7 +3,7 @@ module_name: "steering_wheel_module_23"
 
 buckets:
     bucket_1:
-        frequency_hz: 10
+        frequency_hz: 250
         parameters:
             swUpshift_state:
               ADC: NON_ADC
